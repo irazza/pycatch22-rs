@@ -17,6 +17,8 @@ does. Pass ``normalize=False`` to compute on the series exactly as given.
 
 from __future__ import annotations
 
+import importlib.metadata as _metadata
+
 import numpy as np
 
 from . import pycatch22_rs as _rust
@@ -26,7 +28,10 @@ N_FEATURES: int = _rust.N_FEATURES
 #: Number of features computed on the z-scored series; the rest use the raw one.
 N_NORMALIZED: int = _rust.N_NORMALIZED
 
-__version__ = "0.1.0"
+try:
+    __version__ = _metadata.version("pycatch22-rs")
+except _metadata.PackageNotFoundError:  # pragma: no cover - source checkout
+    __version__ = "unknown"
 
 
 def _as_series(x) -> np.ndarray:

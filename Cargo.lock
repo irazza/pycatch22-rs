@@ -442,7 +442,7 @@ dependencies = [
 
 [[package]]
 name = "pycatch22-rs"
-version = "0.1.0"
+version = "0.1.0-rc.1"
 dependencies = [
  "catch22",
  "numpy",
