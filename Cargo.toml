@@ -3,7 +3,7 @@ members = ["crates/catch22", "tools/ucr_check"]
 
 [package]
 name = "pycatch22-rs"
-version = "0.1.0-rc.1"
+version = "0.1.0"
 edition = "2024"
 description = "Python bindings for the catch22 time-series feature set, implemented in Rust"
 license = "GPL-3.0-or-later"
