@@ -3,5 +3,12 @@ target/
 .vscode/
 *.so
 *cache*
-*.lock
+dist/
+__pycache__/
+.pytest_cache/
 
+# Pinned checkout of the original catch22 C sources, populated by
+# tools/c_reference/fetch.sh, plus the reference driver binaries.
+tools/c_reference/upstream/
+tools/c_reference/driver_O2
+tools/c_reference/driver_native
