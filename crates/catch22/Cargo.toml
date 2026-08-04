@@ -1,0 +1,17 @@
+[package]
+name = "catch22"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Rust implementation of the catch22 time-series feature set, verified against the original C"
+repository = "https://github.com/irazza/pycatch22-rs"
+
+[dependencies]
+rustfft = "6.4"
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bench]]
+name = "features"
+harness = false

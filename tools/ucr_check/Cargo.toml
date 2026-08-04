@@ -1,0 +1,14 @@
+[package]
+name = "ucr_check"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "Compares the Rust catch22 kernel against the original C implementation over the UCR archive"
+publish = false
+
+[dependencies]
+catch22 = { path = "../../crates/catch22" }
+
+[[bin]]
+name = "ucr_check"
+path = "src/main.rs"
