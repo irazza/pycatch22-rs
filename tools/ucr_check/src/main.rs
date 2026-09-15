@@ -261,8 +261,8 @@ fn check_file(path: &Path, cfg: &Config, tag: &str) -> Result<Summary, String> {
     let _ = fs::remove_file(&out_bin);
 
     let mut c_values = Vec::with_capacity(bytes.len() / 8);
-    for chunk in bytes.chunks_exact(8) {
-        c_values.push(f64::from_le_bytes(chunk.try_into().unwrap()));
+    for chunk in bytes.as_chunks::<8>().0 {
+        c_values.push(f64::from_le_bytes(*chunk));
     }
 
     let mut summary = Summary::new();
