@@ -29,7 +29,7 @@ impl PositionIndex {
         let mut i = pos + 1;
         while i <= self.n {
             self.tree[i] += 1;
-            i += i & i.wrapping_neg();
+            i += i.isolate_lowest_one();
         }
     }
 
