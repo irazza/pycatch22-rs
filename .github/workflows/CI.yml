@@ -86,7 +86,7 @@ jobs:
         run: |
           bash tools/c_reference/fetch.sh
           make -C tools/c_reference
-      - name: Regenerate fixtures from C and diff against the committed ones
+      - name: Regenerate fixtures from C and compare against the committed ones
         run: |
           pip install numpy
           # No UCR archive on the runner, so this regenerates the edge cases
@@ -94,21 +94,66 @@ jobs:
           python tools/make_fixtures.py --ucr-root /nonexistent \
             --driver tools/c_reference/driver_O2 --out /tmp/golden-regenerated.tsv
           python - <<'EOF'
+          import numpy as np
+
+          FEATURES = 25
+          # Integer/ratio features that must match C exactly, as in the test
+          # suites.
+          EXACT = {6, 11, 13, 14, 16, 17, 21}
+          RTOL = 1e-9
+          ATOL = 1e-12
+
+
           def load(path):
-              return {
-                  line.split('\t')[0]: line
-                  for line in open(path)
-                  if not line.startswith('#')
-              }
+              fixtures = {}
+              with open(path) as handle:
+                  for line in handle:
+                      if line.startswith('#') or not line.strip():
+                          continue
+                      fields = line.rstrip('\n').split('\t')
+                      name = fields[0]
+                      n = int(fields[1])
+                      expected = np.array(
+                          [float(v) for v in fields[2:2 + FEATURES]]
+                      )
+                      series = np.array(
+                          [float(v) for v in fields[2 + FEATURES:2 + FEATURES + n]]
+                      )
+                      fixtures[name] = (n, expected, series)
+              return fixtures
+
+
+          def agrees(actual, expected, exact):
+              if np.isnan(actual) and np.isnan(expected):
+                  return True
+              if actual == expected:
+                  return True
+              if np.isnan(actual) != np.isnan(expected):
+                  return False
+              if exact:
+                  return False
+              return abs(actual - expected) <= ATOL + RTOL * abs(expected)
+
 
           committed = load('tests/data/golden.tsv')
           regenerated = load('/tmp/golden-regenerated.tsv')
-          drift = [
-              name for name, line in regenerated.items()
-              if name in committed and committed[name] != line
-          ]
+          drift = []
+          for name, (n, expected, series) in regenerated.items():
+              if name not in committed:
+                  continue
+              committed_n, committed_expected, committed_series = committed[name]
+              if n != committed_n or not np.array_equal(series, committed_series):
+                  drift.append(f'{name}: input series changed')
+                  continue
+              for i in range(FEATURES):
+                  if not agrees(expected[i], committed_expected[i], i in EXACT):
+                      drift.append(
+                          f'{name} feature {i}: C now gives '
+                          f'{float(expected[i])!r}, committed '
+                          f'{float(committed_expected[i])!r}'
+                      )
           if drift:
-              raise SystemExit('C reference output drifted for: ' + ', '.join(drift))
+              raise SystemExit('C reference output drifted:\n' + '\n'.join(drift))
           print(f'{len(regenerated)} fixtures still match the C reference')
           EOF
 
